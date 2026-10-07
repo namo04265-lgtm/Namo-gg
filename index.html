@@ -1,0 +1,702 @@
+<!DOCTYPE html>
+<html lang="th" class="dark">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Meownet - Mobile App Replica</title>
+    <!-- Tailwind CSS CDN -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = {
+            darkMode: 'class',
+            theme: {
+                extend: {
+                    colors: {
+                        brand: {
+                            orange: '#FF8800',
+                            darkOrange: '#E07600',
+                            yellow: '#FFC800',
+                            bg: '#121217',
+                            card: '#1C1C24',
+                            border: '#2A2A36',
+                            textMuted: '#9CA3AF'
+                        }
+                    },
+                    fontFamily: {
+                        sans: ['Kanit', 'Inter', 'sans-serif']
+                    }
+                }
+            }
+        }
+    </script>
+    <!-- Google Fonts Kanit -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Kanit:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <!-- Font Awesome Icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    
+    <!-- jsQR Library สำหรับอ่าน QR Code บนสลิปหน้าบ้าน -->
+    <script src="https://cdn.jsdelivr.net/npm/jsqr@1.4.0/dist/jsQR.min.js"></script>
+
+    <style>
+        body {
+            font-family: 'Kanit', sans-serif;
+            user-select: none;
+            -webkit-tap-highlight-color: transparent;
+        }
+
+        .pixel-bg {
+            background-color: #0d0d12;
+            background-image: 
+                radial-gradient(#ff8800 0.75px, transparent 0.75px),
+                radial-gradient(#ff8800 0.75px, #0d0d12 0.75px);
+            background-size: 30px 30px;
+            background-position: 0 0, 15px 15px;
+            opacity: 0.95;
+        }
+
+        .no-scrollbar::-webkit-scrollbar {
+            display: none;
+        }
+        .no-scrollbar {
+            -ms-overflow-style: none;
+            scrollbar-width: none;
+        }
+
+        @keyframes ticker {
+            0% { transform: translateY(0); }
+            100% { transform: translateY(-50%); }
+        }
+        .animate-ticker {
+            animation: ticker 12s linear infinite;
+        }
+        .animate-ticker:hover {
+            animation-play-state: paused;
+        }
+    </style>
+</head>
+<body class="bg-gray-100 dark:bg-[#0b0b0f] text-gray-800 dark:text-gray-100 min-h-screen flex justify-center items-start sm:py-6 transition-colors duration-200">
+
+    <!-- Mobile Container Simulation -->
+    <div id="app-container" class="w-full max-w-md min-h-screen sm:min-h-[844px] sm:max-h-[900px] bg-white dark:bg-[#13131a] sm:rounded-3xl shadow-2xl relative flex flex-col overflow-hidden border-0 sm:border border-gray-200 dark:border-gray-800">
+
+        <!-- TOP BAR -->
+        <header class="sticky top-0 z-30 bg-white/90 dark:bg-[#16161f]/90 backdrop-blur-md px-4 py-3 border-b border-gray-200 dark:border-[#232330] flex items-center justify-between">
+            <div class="flex items-center space-x-3">
+                <button id="btn-hamburger" class="p-2 rounded-lg text-gray-600 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-[#22222f] transition">
+                    <i class="fa-solid fa-bars text-xl"></i>
+                </button>
+                <div class="flex items-center space-x-2">
+                    <div class="w-7 h-7 rounded-full bg-brand-yellow flex items-center justify-center font-bold text-black text-xs shadow-sm">
+                        <i class="fa-solid fa-cat text-sm"></i>
+                    </div>
+                    <span class="font-bold text-lg tracking-wide text-brand-orange">Meownet</span>
+                </div>
+            </div>
+
+            <div class="flex items-center space-x-1.5">
+                <button id="btn-bell" class="p-2 rounded-full text-gray-600 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-[#22222f] relative">
+                    <i class="fa-regular fa-bell text-lg"></i>
+                    <span class="absolute top-1.5 right-1.5 w-2 h-2 bg-brand-orange rounded-full animate-ping"></span>
+                    <span class="absolute top-1.5 right-1.5 w-2 h-2 bg-brand-orange rounded-full"></span>
+                </button>
+
+                <button id="btn-settings" class="p-2 rounded-full text-gray-600 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-[#22222f]">
+                    <i class="fa-solid fa-gear text-lg"></i>
+                </button>
+
+                <button id="btn-profile" class="ml-1 focus:outline-none ring-2 ring-brand-orange/50 rounded-full p-0.5">
+                    <div class="w-8 h-8 rounded-full bg-yellow-400 flex items-center justify-center border border-black overflow-hidden">
+                        <i class="fa-solid fa-cat text-black text-lg"></i>
+                    </div>
+                </button>
+            </div>
+        </header>
+
+        <!-- MAIN DASHBOARD SCROLL AREA -->
+        <main class="flex-1 overflow-y-auto no-scrollbar pixel-bg p-4 space-y-4">
+
+            <!-- Banner Card -->
+            <div class="w-full rounded-2xl overflow-hidden bg-gradient-to-r from-orange-600 via-brand-orange to-yellow-500 p-0.5 shadow-lg">
+                <div class="bg-[#181822] rounded-[14px] p-4 flex items-center justify-between relative overflow-hidden">
+                    <div class="space-y-1 z-10">
+                        <span class="inline-block px-2.5 py-0.5 bg-brand-orange/20 text-brand-orange text-xs font-semibold rounded-full border border-brand-orange/30">
+                            MEOWNET V2.0
+                        </span>
+                        <h2 class="text-xl font-extrabold text-white tracking-wide">MEOW NET</h2>
+                        <p id="display-banner-text" class="text-xs text-gray-400">บริการเช่าไฟล์เน็ต VPN ความเร็วสูง</p>
+                    </div>
+                    <div class="z-10 w-16 h-16 rounded-full bg-brand-yellow border-2 border-black flex items-center justify-center shadow-lg transform rotate-6">
+                        <i class="fa-solid fa-cat text-black text-3xl"></i>
+                    </div>
+                    <div class="absolute -right-6 -bottom-6 w-28 h-28 bg-brand-orange/20 rounded-full blur-xl"></div>
+                </div>
+            </div>
+
+            <!-- Stats Cards Grid -->
+            <div class="grid grid-cols-3 gap-2.5">
+                <div class="bg-[#1a1a24]/90 backdrop-blur border border-[#2c2c3d] rounded-xl p-2.5 text-center shadow-sm">
+                    <div class="text-[11px] text-gray-400 mb-0.5">ผู้ใช้งาน</div>
+                    <div id="stat-users" class="text-base font-bold text-brand-orange">4,759</div>
+                    <div class="text-[9px] text-gray-500">คน</div>
+                </div>
+                <div class="bg-[#1a1a24]/90 backdrop-blur border border-[#2c2c3d] rounded-xl p-2.5 text-center shadow-sm">
+                    <div class="text-[11px] text-gray-400 mb-0.5">พร้อมเช่า</div>
+                    <div id="stat-files" class="text-base font-bold text-brand-orange">179</div>
+                    <div class="text-[9px] text-gray-500">ไฟล์</div>
+                </div>
+                <div class="bg-[#1a1a24]/90 backdrop-blur border border-[#2c2c3d] rounded-xl p-2.5 text-center shadow-sm">
+                    <div class="text-[11px] text-gray-400 mb-0.5">ยอดขาย</div>
+                    <div id="stat-sales" class="text-base font-bold text-brand-orange">6,661</div>
+                    <div class="text-[9px] text-gray-500">ครั้ง</div>
+                </div>
+            </div>
+
+            <!-- 4 Action Graphic Cards Grid -->
+            <div class="grid grid-cols-2 gap-3">
+                <button onclick="openModal('modal-howto')" class="bg-[#181822] hover:bg-[#20202d] border border-[#2a2a3a] rounded-2xl p-3 flex flex-col justify-between h-28 relative overflow-hidden transition group text-left shadow-md">
+                    <div>
+                        <span class="text-xs font-bold text-gray-300 block">วิธีใช้งาน</span>
+                        <span class="text-[10px] text-gray-500 uppercase font-semibold tracking-wider">HOW TO USE</span>
+                    </div>
+                    <div class="self-end text-brand-orange bg-brand-orange/10 p-2.5 rounded-xl border border-brand-orange/20 group-hover:scale-110 transition">
+                        <i class="fa-solid fa-book-open text-xl"></i>
+                    </div>
+                    <div class="absolute -left-2 -bottom-2 w-12 h-12 bg-orange-500/10 rounded-full blur-md"></div>
+                </button>
+
+                <button onclick="openModal('modal-history')" class="bg-[#181822] hover:bg-[#20202d] border border-[#2a2a3a] rounded-2xl p-3 flex flex-col justify-between h-28 relative overflow-hidden transition group text-left shadow-md">
+                    <div>
+                        <span class="text-xs font-bold text-gray-300 block">ประวัติสั่งซื้อ</span>
+                        <span class="text-[10px] text-gray-500 uppercase font-semibold tracking-wider">HISTORY</span>
+                    </div>
+                    <div class="self-end text-yellow-500 bg-yellow-500/10 p-2.5 rounded-xl border border-yellow-500/20 group-hover:scale-110 transition">
+                        <i class="fa-solid fa-box-archive text-xl"></i>
+                    </div>
+                </button>
+
+                <button onclick="openModal('modal-topup')" class="bg-[#181822] hover:bg-[#20202d] border border-[#2a2a3a] rounded-2xl p-3 flex flex-col justify-between h-28 relative overflow-hidden transition group text-left shadow-md">
+                    <div>
+                        <span class="text-xs font-bold text-gray-300 block">เติมเงิน</span>
+                        <span class="text-[10px] text-gray-500 uppercase font-semibold tracking-wider">TOPUP</span>
+                    </div>
+                    <div class="self-end text-green-500 bg-green-500/10 p-2.5 rounded-xl border border-green-500/20 group-hover:scale-110 transition">
+                        <i class="fa-solid fa-wallet text-xl"></i>
+                    </div>
+                </button>
+
+                <button onclick="openModal('modal-contact')" class="bg-[#181822] hover:bg-[#20202d] border border-[#2a2a3a] rounded-2xl p-3 flex flex-col justify-between h-28 relative overflow-hidden transition group text-left shadow-md">
+                    <div>
+                        <span class="text-xs font-bold text-gray-300 block">ติดต่อแอดมิน</span>
+                        <span class="text-[10px] text-gray-500 uppercase font-semibold tracking-wider">CONTACT ADMIN</span>
+                    </div>
+                    <div class="self-end text-purple-400 bg-purple-500/10 p-2.5 rounded-xl border border-purple-500/20 group-hover:scale-110 transition">
+                        <i class="fa-solid fa-headset text-xl"></i>
+                    </div>
+                </button>
+            </div>
+
+            <!-- Products Card Launcher -->
+            <div onclick="openModal('modal-products')" class="w-full bg-gradient-to-r from-brand-orange to-yellow-500 rounded-2xl p-0.5 cursor-pointer shadow-lg hover:opacity-95 transition">
+                <div class="bg-[#161622] rounded-[14px] p-3.5 flex items-center justify-between">
+                    <div class="flex items-center space-x-3">
+                        <div class="w-10 h-10 rounded-xl bg-brand-orange/20 border border-brand-orange/40 flex items-center justify-center text-brand-orange">
+                            <i class="fa-solid fa-grip text-lg"></i>
+                        </div>
+                        <div>
+                            <div class="text-sm font-bold text-white">รายการสินค้า / เช่าไฟล์ VPN</div>
+                            <div class="text-xs text-gray-400">เลือกซื้อเน็ตคุณภาพดี ราคาประหยัด</div>
+                        </div>
+                    </div>
+                    <i class="fa-solid fa-chevron-right text-gray-400 text-sm"></i>
+                </div>
+            </div>
+
+            <!-- Recent Purchase Ticker/Section -->
+            <div class="bg-[#181822] border border-[#2a2a3a] rounded-2xl p-3.5 space-y-3">
+                <div class="flex items-center justify-between border-b border-gray-800 pb-2">
+                    <div class="flex items-center space-x-2">
+                        <span class="w-2 h-2 rounded-full bg-green-500 animate-pulse"></span>
+                        <h3 class="text-xs font-bold text-gray-200 uppercase tracking-wider">รายการสั่งซื้อล่าสุด</h3>
+                    </div>
+                    <span class="text-[10px] text-gray-500">อัปเดตเรียลไทม์</span>
+                </div>
+
+                <div class="h-28 overflow-hidden relative">
+                    <div id="ticker-list" class="space-y-2 animate-ticker"></div>
+                </div>
+            </div>
+
+        </main>
+
+        <!-- FOOTER NAV -->
+        <footer class="bg-white dark:bg-[#16161f] border-t border-gray-200 dark:border-[#232330] py-2 px-6 flex justify-around items-center z-20">
+            <button onclick="switchTab('home')" class="flex flex-col items-center space-y-1 text-brand-orange">
+                <i class="fa-solid fa-house text-lg"></i>
+                <span class="text-[10px] font-medium">หน้าหลัก</span>
+            </button>
+            <button onclick="openModal('modal-products')" class="flex flex-col items-center space-y-1 text-gray-400 hover:text-brand-orange transition">
+                <i class="fa-solid fa-box text-lg"></i>
+                <span class="text-[10px] font-medium">สินค้า</span>
+            </button>
+            <button onclick="openModal('modal-topup')" class="flex flex-col items-center space-y-1 text-gray-400 hover:text-brand-orange transition">
+                <i class="fa-solid fa-wallet text-lg"></i>
+                <span class="text-[10px] font-medium">เติมเงิน</span>
+            </button>
+            <button id="btn-admin-access" class="flex flex-col items-center space-y-1 text-gray-400 hover:text-brand-orange transition">
+                <i class="fa-solid fa-user-shield text-lg"></i>
+                <span class="text-[10px] font-medium">แอดมิน</span>
+            </button>
+        </footer>
+
+        <!-- TOP-UP MODAL -->
+        <div id="modal-topup" class="fixed inset-0 bg-black/80 backdrop-blur-md z-50 hidden flex items-center justify-center p-3 sm:p-4 overflow-y-auto">
+            <div class="bg-[#14141d] border border-[#2a2a3b] rounded-3xl w-full max-w-sm p-4 space-y-4 shadow-2xl relative my-auto">
+                <button onclick="closeModal('modal-topup')" class="absolute top-4 right-4 text-gray-400 hover:text-white z-10">
+                    <i class="fa-solid fa-xmark text-xl"></i>
+                </button>
+
+                <!-- STEP PROGRESS BAR -->
+                <div class="pt-2">
+                    <div class="text-center text-xs font-bold text-brand-orange mb-1">ช่องทางการชำระเงิน</div>
+                    <div class="text-[10px] text-center text-gray-400 mb-3">ทำตามขั้นตอนเพื่อเติมเงิน</div>
+                    <div class="flex items-center justify-between px-2 text-[10px] text-gray-400 relative">
+                        <div class="absolute top-3 left-6 right-6 h-0.5 bg-gray-800 -z-0"></div>
+                        <div id="topup-line-progress" class="absolute top-3 left-6 h-0.5 bg-brand-orange transition-all duration-300 -z-0" style="width: 0%;"></div>
+                        
+                        <div class="flex flex-col items-center z-10">
+                            <span id="step-dot-1" class="w-6 h-6 rounded-full bg-brand-orange text-black font-bold flex items-center justify-center mb-1 text-xs">1</span>
+                            <span class="text-[9px]">เลือกช่องทาง</span>
+                        </div>
+                        <div class="flex flex-col items-center z-10">
+                            <span id="step-dot-2" class="w-6 h-6 rounded-full bg-gray-800 text-gray-400 font-bold flex items-center justify-center mb-1 text-xs">2</span>
+                            <span class="text-[9px]">จำนวนเงิน</span>
+                        </div>
+                        <div class="flex flex-col items-center z-10">
+                            <span id="step-dot-3" class="w-6 h-6 rounded-full bg-gray-800 text-gray-400 font-bold flex items-center justify-center mb-1 text-xs">3</span>
+                            <span class="text-[9px]">ข้อมูลชำระ</span>
+                        </div>
+                        <div class="flex flex-col items-center z-10">
+                            <span id="step-dot-4" class="w-6 h-6 rounded-full bg-gray-800 text-gray-400 font-bold flex items-center justify-center mb-1 text-xs">4</span>
+                            <span class="text-[9px]">ยืนยัน</span>
+                        </div>
+                        <div class="flex flex-col items-center z-10">
+                            <span id="step-dot-5" class="w-6 h-6 rounded-full bg-gray-800 text-gray-400 font-bold flex items-center justify-center mb-1 text-xs">5</span>
+                            <span class="text-[9px]">สำเร็จ</span>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- SUMMARY CARD -->
+                <div id="topup-summary-card" class="hidden bg-[#1a1a26] border border-[#2c2c40] rounded-2xl p-3 space-y-2">
+                    <div class="text-xs font-bold text-gray-200">สรุปการเติมเงิน</div>
+                    <div class="space-y-1 text-xs">
+                        <div class="flex justify-between text-gray-300">
+                            <span>จำนวนเงิน</span>
+                            <span id="sum-amount" class="font-bold text-brand-orange">50.00 ฿</span>
+                        </div>
+                        <div class="flex justify-between text-gray-300">
+                            <span>ช่องทาง</span>
+                            <span id="sum-channel" class="font-semibold text-gray-200">โอนผ่านแอปธนาคาร</span>
+                        </div>
+                        <div id="sum-fee-row" class="hidden">
+                            <div class="text-[10px] text-red-400 pl-2">ค่าธรรมเนียม 0.3% สูงสุด 1฿</div>
+                            <div class="flex justify-between text-gray-400 text-[11px]">
+                                <span>ค่าธรรมเนียม</span>
+                                <span id="sum-fee" class="text-red-400">-0.15 ฿</span>
+                            </div>
+                        </div>
+                        <div class="border-t border-gray-800 pt-1 flex justify-between font-extrabold text-sm text-amber-400">
+                            <span>ยอดที่ต้องโอน</span>
+                            <span id="sum-total">50.00 ฿</span>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- STEP 1: Select Channel -->
+                <div id="topup-step-1" class="space-y-3">
+                    <div>
+                        <h3 class="text-sm font-bold text-white">เลือกช่องทางโอนเงิน</h3>
+                        <p class="text-[11px] text-gray-400">คุณต้องการเติมเงินผ่านช่องทางใด?</p>
+                    </div>
+
+                    <div id="opt-envelope" onclick="selectChannel('envelope')" class="bg-[#181822] hover:bg-[#1e1b18] border border-[#282838] rounded-2xl p-4 relative flex flex-col items-center text-center space-y-2 cursor-pointer shadow-lg transition">
+                        <div id="check-envelope" class="hidden absolute top-3 right-3 w-5 h-5 rounded-full bg-brand-orange text-black flex items-center justify-center text-xs">
+                            <i class="fa-solid fa-check"></i>
+                        </div>
+                        <div class="w-12 h-14 bg-gradient-to-b from-red-500 to-red-700 rounded-lg shadow-md flex items-center justify-center border border-red-400/50 my-1">
+                            <i class="fa-solid fa-envelope text-yellow-300 text-2xl"></i>
+                        </div>
+                        <div>
+                            <div class="font-bold text-sm text-gray-100">ซองอั่งเปา</div>
+                            <div class="text-[11px] text-gray-400">ทรูมันนี่ วอลเล็ท</div>
+                        </div>
+                        <span class="px-2.5 py-0.5 rounded-full bg-red-950/80 border border-red-500/40 text-[10px] text-red-400 font-semibold">
+                            ค่าธรรมเนียม 0.3% สูงสุด 1฿
+                        </span>
+                    </div>
+
+                    <div id="opt-bank" onclick="selectChannel('bank')" class="bg-[#1e1b18] border-2 border-brand-orange rounded-2xl p-4 relative flex flex-col items-center text-center space-y-2 cursor-pointer shadow-lg transition">
+                        <div id="check-bank" class="absolute top-3 right-3 w-5 h-5 rounded-full bg-brand-orange text-black flex items-center justify-center text-xs">
+                            <i class="fa-solid fa-check"></i>
+                        </div>
+                        <div class="w-12 h-14 bg-[#1e1e2d] rounded-lg shadow-md flex items-center justify-center border border-gray-700 my-1 relative overflow-hidden">
+                            <i class="fa-solid fa-qrcode text-white text-2xl"></i>
+                        </div>
+                        <div>
+                            <div class="font-bold text-sm text-gray-100">แนบสลิป</div>
+                            <div class="text-[11px] text-gray-400">โอนผ่านแอปธนาคาร</div>
+                        </div>
+                        <span class="px-2.5 py-0.5 rounded-full bg-emerald-950/80 border border-emerald-500/40 text-[10px] text-emerald-400 font-semibold">
+                            ไม่มีค่าธรรมเนียม
+                        </span>
+                    </div>
+
+                    <div class="flex space-x-2 pt-2">
+                        <button onclick="closeModal('modal-topup')" class="w-1/2 py-2.5 bg-[#1f1f2e] text-gray-300 font-bold text-xs rounded-xl hover:bg-[#28283b] transition">
+                            ย้อนกลับ
+                        </button>
+                        <button onclick="goToTopupStep(2)" class="w-1/2 py-2.5 bg-gradient-to-r from-brand-orange to-yellow-500 text-black font-bold text-xs rounded-xl hover:opacity-95 transition flex items-center justify-center space-x-1">
+                            <span>ดำเนินการต่อ</span>
+                            <i class="fa-solid fa-chevron-right text-xs"></i>
+                        </button>
+                    </div>
+                </div>
+
+                <!-- STEP 2: Enter Amount -->
+                <div id="topup-step-2" class="hidden space-y-3">
+                    <div class="bg-[#181824] border border-[#2a2a3b] rounded-2xl p-3 space-y-3">
+                        <div>
+                            <h3 class="text-xs font-bold text-white">จำนวนเงินที่ต้องการเติม</h3>
+                            <p class="text-[10px] text-gray-400">กรอกจำนวนเงินที่คุณตั้งใจโอนได้เลย</p>
+                        </div>
+
+                        <div>
+                            <label class="text-[10px] text-gray-400 block mb-1">จำนวนเงิน (บาท)</label>
+                            <div class="relative">
+                                <input type="number" id="input-topup-amount" value="50" min="1" step="1" oninput="calculateTopupFee()" class="w-full bg-[#111118] border border-brand-orange/80 rounded-xl px-3 py-2.5 text-base font-bold text-white focus:outline-none focus:ring-1 focus:ring-brand-orange">
+                                <span class="absolute right-3 top-3 text-amber-400 font-bold text-sm">฿</span>
+                            </div>
+                        </div>
+
+                        <div class="space-y-1">
+                            <div class="text-[10px] text-gray-500">หรือเลือกจำนวนด่วน</div>
+                            <div class="grid grid-cols-4 gap-1.5">
+                                <button onclick="setQuickAmount(50)" class="py-1.5 bg-brand-orange/20 border border-brand-orange text-brand-orange font-bold text-xs rounded-lg">50฿</button>
+                                <button onclick="setQuickAmount(100)" class="py-1.5 bg-[#12121a] border border-gray-700 text-gray-300 font-bold text-xs rounded-lg hover:border-brand-orange">100฿</button>
+                                <button onclick="setQuickAmount(200)" class="py-1.5 bg-[#12121a] border border-gray-700 text-gray-300 font-bold text-xs rounded-lg hover:border-brand-orange">200฿</button>
+                                <button onclick="setQuickAmount(300)" class="py-1.5 bg-[#12121a] border border-gray-700 text-gray-300 font-bold text-xs rounded-lg hover:border-brand-orange">300฿</button>
+                                <button onclick="setQuickAmount(500)" class="py-1.5 bg-[#12121a] border border-gray-700 text-gray-300 font-bold text-xs rounded-lg hover:border-brand-orange">500฿</button>
+                                <button onclick="setQuickAmount(1000)" class="py-1.5 bg-[#12121a] border border-gray-700 text-gray-300 font-bold text-xs rounded-lg hover:border-brand-orange">1,000฿</button>
+                                <button onclick="setQuickAmount(2000)" class="py-1.5 bg-[#12121a] border border-gray-700 text-gray-300 font-bold text-xs rounded-lg hover:border-brand-orange">2,000฿</button>
+                                <button onclick="setQuickAmount(5000)" class="py-1.5 bg-[#12121a] border border-gray-700 text-gray-300 font-bold text-xs rounded-lg hover:border-brand-orange">5,000฿</button>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="flex space-x-2 pt-1">
+                        <button onclick="goToTopupStep(1)" class="w-1/2 py-2.5 bg-[#1f1f2e] text-gray-300 font-bold text-xs rounded-xl hover:bg-[#28283b] transition">
+                            ย้อนกลับ
+                        </button>
+                        <button onclick="goToTopupStep(3)" class="w-1/2 py-2.5 bg-gradient-to-r from-brand-orange to-yellow-500 text-black font-bold text-xs rounded-xl hover:opacity-95 transition flex items-center justify-center space-x-1">
+                            <span>ดำเนินการต่อ</span>
+                            <i class="fa-solid fa-chevron-right text-xs"></i>
+                        </button>
+                    </div>
+                </div>
+
+                <!-- STEP 3: Payment Info -->
+                <div id="topup-step-3" class="hidden space-y-3">
+                    <div id="bank-info-container" class="bg-[#181824] border border-[#2a2a3b] rounded-2xl p-3 space-y-3">
+                        <div>
+                            <h3 class="text-xs font-bold text-white">ข้อมูลสำหรับการชำระเงิน</h3>
+                            <p class="text-[10px] text-gray-400">โอนตามจำนวนที่ระบุ แล้วแนบสลิปในขั้นตอนถัดไป</p>
+                        </div>
+
+                        <div class="w-full bg-[#111118] border border-gray-800 rounded-xl p-3 text-center space-y-2 relative overflow-hidden">
+                            <div class="text-[11px] font-semibold text-gray-400 flex items-center justify-center space-x-1">
+                                <i class="fa-solid fa-circle-info text-brand-orange"></i>
+                                <span>ขั้นตอนการอัพสลิป</span>
+                            </div>
+                            <div class="p-2.5 bg-[#181826] rounded-lg border border-dashed border-gray-700 text-[10px] text-gray-400">
+                                อัปโหลดสลิปการโอนเงิน > รอตรวจสอบระบบอัตโนมัติ 1-5 นาที
+                            </div>
+                        </div>
+
+                        <div class="space-y-2 text-xs">
+                            <div class="flex justify-between items-center bg-[#111118] p-2.5 rounded-xl border border-gray-800">
+                                <span class="text-gray-400">ธนาคาร</span>
+                                <span id="display-bank-name" class="font-bold text-emerald-400">ธนาคารกสิกรไทย</span>
+                            </div>
+                            <div class="flex justify-between items-center bg-[#111118] p-2.5 rounded-xl border border-gray-800">
+                                <span class="text-gray-400">เลขบัญชี</span>
+                                <div class="flex items-center space-x-2">
+                                    <span id="display-bank-acc" class="font-mono font-bold text-amber-400 text-sm">1592598015</span>
+                                    <button onclick="copyBankAcc()" class="p-1 bg-gray-800 hover:bg-gray-700 text-gray-300 rounded text-xs">
+                                        <i class="fa-regular fa-copy"></i>
+                                    </button>
+                                </div>
+                            </div>
+                            <div class="flex justify-between items-center bg-[#111118] p-2.5 rounded-xl border border-gray-800">
+                                <span class="text-gray-400">ชื่อบัญชี</span>
+                                <span id="display-bank-owner" class="font-bold text-white">อัลกุวาร์ หลังเดาะ</span>
+                            </div>
+                        </div>
+
+                        <div class="p-2 rounded-xl bg-red-950/40 border border-red-500/30 text-[10px] text-red-400 text-center">
+                            <i class="fa-solid fa-triangle-exclamation mr-1"></i> กรุณาโอนผ่านแอปธนาคารที่มี QR CODE บนสลิปเท่านั้น
+                        </div>
+                    </div>
+
+                    <div id="envelope-info-container" class="hidden bg-[#181824] border border-[#2a2a3b] rounded-2xl p-3 space-y-3">
+                        <div>
+                            <h3 class="text-xs font-bold text-white">ยืนยันการชำระเงินซองอั่งเปา</h3>
+                            <p class="text-[10px] text-gray-400">วางลิงก์ซองอั่งเปา TrueMoney แล้วกดยืนยัน</p>
+                        </div>
+
+                        <div>
+                            <label class="text-[10px] text-gray-400 block mb-1">ลิงค์ซองอั่งเปา</label>
+                            <input type="text" id="input-voucher-url" placeholder="https://gift.truemoney.com/campaign/?v=..." class="w-full bg-[#111118] border border-brand-orange/80 rounded-xl px-3 py-2 text-xs text-white focus:outline-none focus:ring-1 focus:ring-brand-orange">
+                        </div>
+                    </div>
+
+                    <div class="flex space-x-2 pt-1">
+                        <button onclick="goToTopupStep(2)" class="w-1/2 py-2.5 bg-[#1f1f2e] text-gray-300 font-bold text-xs rounded-xl hover:bg-[#28283b] transition">
+                            ย้อนกลับ
+                        </button>
+                        <button onclick="goToTopupStep(4)" class="w-1/2 py-2.5 bg-gradient-to-r from-brand-orange to-yellow-500 text-black font-bold text-xs rounded-xl hover:opacity-95 transition flex items-center justify-center space-x-1">
+                            <span>ดำเนินการต่อ</span>
+                            <i class="fa-solid fa-chevron-right text-xs"></i>
+                        </button>
+                    </div>
+                </div>
+
+                <!-- STEP 4: Confirm Payment & Upload Slip -->
+                <div id="topup-step-4" class="hidden space-y-3">
+                    <div class="bg-[#181824] border border-[#2a2a3b] rounded-2xl p-3 space-y-3">
+                        <div>
+                            <h3 class="text-xs font-bold text-white">ยืนยันการชำระเงิน</h3>
+                            <p id="step-4-desc" class="text-[10px] text-gray-400">อัปโหลดภาพสลิปการโอน จากนั้นกดยืนยัน</p>
+                        </div>
+
+                        <div id="upload-slip-box" class="w-full bg-[#111118] border-2 border-dashed border-gray-700 hover:border-brand-orange rounded-2xl p-6 text-center space-y-3 transition cursor-pointer relative" onclick="document.getElementById('file-slip').click()">
+                            <input type="file" id="file-slip" accept="image/*" class="hidden" onchange="handleFileSelect(event)">
+                            <div class="w-10 h-10 rounded-full bg-red-500/20 text-red-400 flex items-center justify-center mx-auto text-lg">
+                                <i class="fa-solid fa-qrcode"></i>
+                            </div>
+                            <div class="space-y-1">
+                                <div class="text-xs font-bold text-gray-200">เลือกภาพสลิปโอนเงิน (มี QR Code)</div>
+                                <div class="text-[10px] text-gray-500">รองรับไฟล์ JPG, PNG</div>
+                            </div>
+                            <button type="button" class="px-4 py-1.5 bg-[#1e1e2d] border border-gray-700 text-xs font-semibold text-gray-300 rounded-xl hover:bg-[#28283d] transition">
+                                อัปโหลดไฟล์
+                            </button>
+                            <div id="slip-preview-name" class="text-xs text-brand-orange font-bold truncate hidden pt-1"></div>
+                        </div>
+                    </div>
+
+                    <div class="flex space-x-2 pt-1">
+                        <button onclick="goToTopupStep(3)" class="w-1/2 py-2.5 bg-[#1f1f2e] text-gray-300 font-bold text-xs rounded-xl hover:bg-[#28283b] transition">
+                            ย้อนกลับ
+                        </button>
+                        <button id="btn-submit-topup" onclick="processTopupPayment()" class="w-1/2 py-2.5 bg-gradient-to-r from-brand-orange to-yellow-500 text-black font-bold text-xs rounded-xl hover:opacity-95 transition flex items-center justify-center space-x-1">
+                            <i class="fa-solid fa-check-circle text-xs"></i>
+                            <span>ยืนยันการชำระเงิน</span>
+                        </button>
+                    </div>
+                </div>
+
+                <!-- STEP 5: Success Step -->
+                <div id="topup-step-success" class="hidden space-y-4 text-center py-4">
+                    <div class="w-16 h-16 bg-emerald-500/20 border-2 border-emerald-400 text-emerald-400 rounded-full flex items-center justify-center text-3xl mx-auto animate-bounce">
+                        <i class="fa-solid fa-check"></i>
+                    </div>
+                    <div>
+                        <h3 class="text-lg font-bold text-white">เติมเงินสำเร็จ!</h3>
+                        <p id="topup-success-msg" class="text-xs text-gray-300 mt-1">ระบบตรวจสอบสลิปและปรับยอดเงินเรียบร้อยแล้ว</p>
+                    </div>
+                    <button onclick="closeModal('modal-topup'); goToTopupStep(1);" class="w-full py-2.5 bg-gradient-to-r from-brand-orange to-yellow-500 text-black font-bold text-xs rounded-xl shadow-md">
+                        ตกลง / ปิดหน้าต่าง
+                    </button>
+                </div>
+
+            </div>
+        </div>
+
+        <!-- NOTIFICATION TOAST -->
+        <div id="toast-notice" class="fixed bottom-16 left-1/2 transform -translate-x-1/2 bg-brand-orange text-black font-semibold text-xs py-2 px-4 rounded-full shadow-lg z-50 opacity-0 pointer-events-none transition-opacity duration-300 flex items-center space-x-2">
+            <i class="fa-solid fa-circle-check"></i>
+            <span id="toast-text">แจ้งเตือน</span>
+        </div>
+
+    </div>
+
+    <script>
+        // Default App State
+        const DEFAULT_STATE = {
+            bannerText: "บริการเช่าไฟล์เน็ต VPN ความเร็วสูง",
+            user: { name: "Gffff", tag: "@Gffff", balance: 0.00, totalSpent: 138.00 },
+            bank: { name: "ธนาคารกสิกรไทย", accountNumber: "1592598015", ownerName: "อัลกุวาร์ หลังเดาะ" },
+            stats: { users: 4759, files: 179, sales: 6661 },
+            targetPhone: "0954312465",
+            selectedChannel: "bank",
+            usedSlips: [], // รายการเก็บ QR Payload/เลขธุรกรรมเพื่อป้องกันสลิปซ้ำ
+            products: [
+                { id: 1, name: "ไฟล์ True Unlimited 30 วัน", price: 50.00, icon: "fa-bolt", speed: "100 Mbps", stock: 24 },
+                { id: 2, name: "ไฟล์ AIS VIP Fast Pass", price: 30.00, icon: "fa-rocket", speed: "50 Mbps", stock: 15 }
+            ],
+            history: []
+        };
+
+        let appData = JSON.parse(localStorage.getItem('MEOWNET_APP_DATA')) || DEFAULT_STATE;
+        if (!appData.usedSlips) appData.usedSlips = [];
+
+        let selectedSlipFile = null;
+
+        function saveData() {
+            localStorage.setItem('MEOWNET_APP_DATA', JSON.stringify(appData));
+            renderApp();
+        }
+
+        document.addEventListener('DOMContentLoaded', () => {
+            renderApp();
+        });
+
+        function renderApp() {
+            document.getElementById('display-banner-text').innerText = appData.bannerText;
+            document.getElementById('display-bank-name').innerText = appData.bank.name;
+            document.getElementById('display-bank-acc').innerText = appData.bank.accountNumber;
+            document.getElementById('display-bank-owner').innerText = appData.bank.ownerName;
+            document.getElementById('stat-users').innerText = Number(appData.stats.users).toLocaleString();
+            document.getElementById('stat-files').innerText = Number(appData.stats.files).toLocaleString();
+            document.getElementById('stat-sales').innerText = Number(appData.stats.sales).toLocaleString();
+        }
+
+        function openModal(id) { document.getElementById(id).classList.remove('hidden'); }
+        function closeModal(id) { document.getElementById(id).classList.add('hidden'); }
+
+        function selectChannel(ch) {
+            appData.selectedChannel = ch;
+            if (ch === 'bank') {
+                document.getElementById('opt-bank').className = "bg-[#1e1b18] border-2 border-brand-orange rounded-2xl p-4 relative flex flex-col items-center text-center space-y-2 cursor-pointer shadow-lg transition";
+                document.getElementById('opt-envelope').className = "bg-[#181822] hover:bg-[#1e1b18] border border-[#282838] rounded-2xl p-4 relative flex flex-col items-center text-center space-y-2 cursor-pointer shadow-lg transition";
+            } else {
+                document.getElementById('opt-envelope').className = "bg-[#1e1b18] border-2 border-brand-orange rounded-2xl p-4 relative flex flex-col items-center text-center space-y-2 cursor-pointer shadow-lg transition";
+                document.getElementById('opt-bank').className = "bg-[#181822] hover:bg-[#1e1b18] border border-[#282838] rounded-2xl p-4 relative flex flex-col items-center text-center space-y-2 cursor-pointer shadow-lg transition";
+            }
+        }
+
+        function goToTopupStep(step) {
+            document.getElementById('topup-step-1').classList.add('hidden');
+            document.getElementById('topup-step-2').classList.add('hidden');
+            document.getElementById('topup-step-3').classList.add('hidden');
+            document.getElementById('topup-step-4').classList.add('hidden');
+            document.getElementById('topup-step-success').classList.add('hidden');
+            
+            document.getElementById(`topup-step-${step === 5 ? 'success' : step}`).classList.remove('hidden');
+            if (step > 1 && step < 5) document.getElementById('topup-summary-card').classList.remove('hidden');
+            else document.getElementById('topup-summary-card').classList.add('hidden');
+        }
+
+        function handleFileSelect(evt) {
+            const files = evt.target.files;
+            if (files && files[0]) {
+                selectedSlipFile = files[0];
+                const preview = document.getElementById('slip-preview-name');
+                preview.innerText = `แนบไฟล์: ${selectedSlipFile.name}`;
+                preview.classList.remove('hidden');
+            }
+        }
+
+        // อ่าน QR Code บนสลิปผ่าน Client Canvas
+        function scanQrFromImage(file) {
+            return new Promise((resolve, reject) => {
+                const reader = new FileReader();
+                reader.onload = (e) => {
+                    const img = new Image();
+                    img.onload = () => {
+                        const canvas = document.createElement('canvas');
+                        const ctx = canvas.getContext('2d');
+                        canvas.width = img.width;
+                        canvas.height = img.height;
+                        ctx.drawImage(img, 0, 0);
+                        const imageData = ctx.getImageData(0, 0, canvas.width, canvas.height);
+                        const code = jsQR(imageData.data, imageData.width, imageData.height);
+                        if (code) resolve(code.data);
+                        else reject("ไม่พบ QR Code บนสลิป กรุณาอัปโหลดรูปสลิปที่มี QR Code ชัดเจน");
+                    };
+                    img.src = e.target.result;
+                };
+                reader.readAsDataURL(file);
+            });
+        }
+
+        // ประมวลผลและยืนยันการโอนเงินผ่านสลิป
+        async function processTopupPayment() {
+            const btn = document.getElementById('btn-submit-topup');
+            const expectedAmount = parseFloat(document.getElementById('input-topup-amount').value) || 0;
+
+            if (appData.selectedChannel === 'bank') {
+                if (!selectedSlipFile) {
+                    showNotice('กรุณาอัปโหลดภาพสลิปการโอนเงิน');
+                    return;
+                }
+
+                btn.disabled = true;
+                btn.innerHTML = `<i class="fa-solid fa-spinner fa-spin"></i> <span>กำลังสแกนและตรวจสอบสลิป...</span>`;
+
+                try {
+                    // 1. อ่านค่า QR Code บนสลิป
+                    const qrPayload = await scanQrFromImage(selectedSlipFile);
+
+                    // 2. ตรวจสอบสลิปซ้ำ (Anti-Reuse Verification)
+                    if (appData.usedSlips.includes(qrPayload)) {
+                        showNotice("❌ สลิปนี้ถูกใช้งานเติมเงินไปแล้ว ไม่สามารถใช้ซ้ำได้!");
+                        btn.disabled = false;
+                        btn.innerHTML = `<span>ยืนยันการชำระเงิน</span>`;
+                        return;
+                    }
+
+                    /* 
+                       3. ตัวอย่างการส่งค่าไปตรวจสอบผ่าน Backend API (SlipOK / EasySlip)
+                       คำแนะนำ: ในการใช้งานจริง ควรเรียกส่ง qrPayload ไปที่ Backend Server ของคุณ
+                       
+                       const response = await fetch('/api/verify-slip', {
+                           method: 'POST',
+                           headers: { 'Content-Type': 'application/json' },
+                           body: JSON.stringify({ 
+                               qrData: qrPayload, 
+                               expectedAmount: expectedAmount,
+                               expectedAccount: appData.bank.accountNumber 
+                           })
+                       });
+                       const result = await response.json();
+                    */
+
+                    // ตรวจสอบเงื่อนไขยอดเงินและข้อมูล (จำลองคำตอบจากการสแกน)
+                    appData.usedSlips.push(qrPayload); // บันทึกว่าสลิปนี้ถูกใช้แล้ว
+                    appData.user.balance += expectedAmount;
+                    saveData();
+
+                    document.getElementById('topup-success-msg').innerText = `ตรวจสอบสลิปถูกต้อง! เติมเงิน +฿${expectedAmount.toFixed(2)} บาท เรียบร้อยแล้ว`;
+                    goToTopupStep(5);
+
+                } catch (err) {
+                    showNotice(typeof err === 'string' ? err : 'ไม่สามารถสแกนสลิปได้');
+                } finally {
+                    btn.disabled = false;
+                    btn.innerHTML = `<i class="fa-solid fa-check-circle text-xs"></i> <span>ยืนยันการชำระเงิน</span>`;
+                }
+            }
+        }
+
+        function showNotice(msg) {
+            const toast = document.getElementById('toast-notice');
+            document.getElementById('toast-text').innerText = msg;
+            toast.classList.remove('opacity-0', 'pointer-events-none');
+            setTimeout(() => { toast.classList.add('opacity-0', 'pointer-events-none'); }, 3000);
+        }
+    </script>
+</body>
+</html>
